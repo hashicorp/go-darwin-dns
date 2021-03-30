@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/johnstarich/go/dns/scutil"
-	"github.com/johnstarich/go/dns/staggercast"
+	"github.com/hashicorp/go-darwin-dns/dns/scutil"
+	"github.com/hashicorp/go-darwin-dns/dns/staggercast"
 	"go.uber.org/zap"
 )
 
@@ -78,11 +78,13 @@ func (m *macOSDialer) ensureNameservers() ([]string, error) {
 	nameservers := m.nameservers
 	m.nameserversMu.RUnlock()
 	if len(nameservers) != 0 {
+		m.Logger.Debug("[DNS-TRACE] Already read scutil", zap.Int("nameservers", len(nameservers)))
 		return nameservers, nil
 	}
 	m.nameserversMu.Lock()
 	defer m.nameserversMu.Unlock()
 	if len(m.nameservers) != 0 { // check again, could change while waiting on lock
+		m.Logger.Debug("[DNS-TRACE] Already read scutil", zap.Int("nameservers", len(nameservers)))
 		return m.nameservers, nil
 	}
 
@@ -92,6 +94,7 @@ func (m *macOSDialer) ensureNameservers() ([]string, error) {
 	cfg, err := m.readResolvers(ctx)
 	for _, resolver := range cfg.Resolvers {
 		for _, nameserver := range resolver.Nameservers {
+			m.Logger.Debug("[DNS-TRACE] Adding nameserver...", zap.String("nameserver", nameserver))
 			m.nameservers = append(m.nameservers, nameserver+":53")
 		}
 	}
@@ -112,6 +115,7 @@ func (m *macOSDialer) DialContext(ctx context.Context, network, address string) 
 		return m.dialer.DialContext(ctx, network, address)
 	}
 
+	m.Logger.Debug("[DNS-TRACE] Using nameserver: ", zap.String("RemoteAddr", conn.RemoteAddr().String()))
 	return conn, nil
 }
 
@@ -132,6 +136,7 @@ func (m *macOSDialer) dialAll(ctx context.Context, nameservers []string) (net.Co
 			if err != nil {
 				m.Logger.Warn("Error dialing nameserver", zap.String("nameserver", nameserver), zap.Int("index", ix), zap.Error(err))
 			} else {
+				m.Logger.Debug("[DNS-TRACE] Successfully dialed nameserver", zap.String("nameserver", nameserver))
 				conns <- dialResp{ix: ix, conn: conn}
 			}
 			wait.Done()
@@ -211,6 +216,7 @@ func (m *macOSDialer) reorderNameservers(ctx context.Context, conn staggercast.C
 	<-ctx.Done()
 	stats := conn.Stats()
 	if stats.FastestRemoteIndex == 0 {
+		m.Logger.Debug("[DNS-TRACE] Fastest remote already first", zap.String("nameserver", m.nameservers[stats.FastestRemoteIndex]))
 		return
 	}
 

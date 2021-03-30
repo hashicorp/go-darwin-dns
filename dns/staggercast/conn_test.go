@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/johnstarich/go/dns/testhelpers"
+	"github.com/hashicorp/go-darwin-dns/dns/testhelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

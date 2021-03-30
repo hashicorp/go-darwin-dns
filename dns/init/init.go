@@ -3,7 +3,7 @@ package init
 import (
 	"net"
 
-	"github.com/johnstarich/go/dns"
+	"github.com/hashicorp/go-darwin-dns/dns"
 )
 
 func init() {
