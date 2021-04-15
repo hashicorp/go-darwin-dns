@@ -3,6 +3,7 @@ package dns
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"runtime"
 	"sort"
@@ -94,8 +95,15 @@ func (m *macOSDialer) ensureNameservers() ([]string, error) {
 	cfg, err := m.readResolvers(ctx)
 	for _, resolver := range cfg.Resolvers {
 		for _, nameserver := range resolver.Nameservers {
-			m.Logger.Debug("[DNS-TRACE] Adding nameserver...", zap.String("nameserver", nameserver))
-			m.nameservers = append(m.nameservers, nameserver+":53")
+			ip := net.ParseIP(nameserver)
+			fmt.Println(ip.To4())
+			if ip.To4() != nil { //&& len(ip) == net.IPv4len {
+				m.Logger.Debug("[DNS-TRACE] Adding nameserver...", zap.String("nameserver", nameserver))
+				m.nameservers = append(m.nameservers, nameserver+":53")
+			} else {
+				m.Logger.Debug("[DNS-TRACE] Could not use as IPv4, assuming IPv6", zap.String("nameserver", nameserver))
+				m.nameservers = append(m.nameservers, "["+nameserver+"]:53")
+			}
 		}
 	}
 	m.Logger.Info("Finished reading macOS DNS config from 'scutil'", zap.Error(err))
