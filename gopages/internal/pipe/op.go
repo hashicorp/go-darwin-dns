@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2019, 2020
+// SPDX-License-Identifier: Apache-2.0
+
 // Package pipe helps chain together multiple error-returning operations, such that the first error is returned immediately.
 // This is especially useful on error guards for eliminating boilerplate and easily achieving full test coverage.
 //

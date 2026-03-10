@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2019, 2020
+// SPDX-License-Identifier: Apache-2.0
+
 // Command watch generates docs and starts an HTTP endpoint to serve them. Also runs a file watcher on the current module to regenerate docs on change events.
 //
 // watch is useful for testing godoc code comments and while developing on gopages itself.
