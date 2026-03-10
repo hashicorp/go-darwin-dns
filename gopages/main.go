@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2019, 2020
+// SPDX-License-Identifier: Apache-2.0
+
 //go:generate go run ./cmd/gendoc -template ./cmd/gendoc/doc.go -out doc.go
 
 package main
